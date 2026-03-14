@@ -112,7 +112,20 @@ CREATE TABLE IF NOT EXISTS signals (
 );
 
 CREATE INDEX IF NOT EXISTS idx_signals_created_at ON signals(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_normalized_prices_timestamp ON normalized_prices(timestamp DESC);
+
+-- AI Predictions Table
+CREATE TABLE IF NOT EXISTS signals_predicted (
+    id SERIAL PRIMARY KEY,
+    crash_probability DECIMAL(5, 4),
+    prediction VARCHAR(10),
+    confidence DECIMAL(5, 4),
+    signal_id INTEGER,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_signals_predicted_created ON signals_predicted(created_at DESC);
+
+-- Config table for thresholds
 CREATE INDEX IF NOT EXISTS idx_normalized_leverage_timestamp ON normalized_leverage(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_normalized_sentiment_timestamp ON normalized_sentiment(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_normalized_macro_timestamp ON normalized_macro(timestamp DESC);
@@ -123,6 +136,20 @@ CREATE TABLE IF NOT EXISTS config (
     value JSONB,
     updated_at TIMESTAMP DEFAULT NOW()
 );
+
+-- System logs table
+CREATE TABLE IF NOT EXISTS system_logs (
+    id SERIAL PRIMARY KEY,
+    event_type VARCHAR(50),
+    component VARCHAR(50),
+    status VARCHAR(20),
+    message TEXT,
+    details JSONB,
+    timestamp TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_system_logs_timestamp ON system_logs(timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_system_logs_event_type ON system_logs(event_type);
 
 -- Sync tracking
 CREATE TABLE IF NOT EXISTS airbyte_sync_log (
