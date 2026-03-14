@@ -66,11 +66,18 @@ class SignalEngine:
 
     def _score_macro_layer(self, cpi: Optional[float], dxy: Optional[float], prev_cpi: Optional[float], prev_dxy: Optional[float]) -> int:
         improving = 0
+        worsening = 0
         if cpi and prev_cpi and cpi < prev_cpi:
             improving += 1
+        elif cpi and prev_cpi and cpi > prev_cpi:
+            worsening += 1
         if dxy and prev_dxy and dxy < prev_dxy:
             improving += 1
-        return 1 if improving >= 1 else 0
+        elif dxy and prev_dxy and dxy > prev_dxy:
+            worsening += 1
+        if not cpi and not dxy:
+            return 1
+        return 1 if worsening == 0 else 0
 
     def compute_score(self) -> dict:
         data = self._get_latest_data()

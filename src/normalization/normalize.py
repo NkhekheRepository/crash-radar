@@ -119,14 +119,23 @@ class Normalizer:
         rows = db.execute("SELECT DISTINCT source, MAX(timestamp) as ts FROM raw_news GROUP BY source")
         inserted = 0
         
-        for row in rows:
+        if not rows:
             db.insert_one("normalized_regulation", {
                 "threat_level": "none",
-                "source": row["source"],
-                "description": "No regulatory threat detected",
-                "timestamp": row.get("ts", datetime.now())
+                "source": "default",
+                "description": "No regulatory news detected - default to safe",
+                "timestamp": datetime.now()
             })
-            inserted += 1
+            inserted = 1
+        else:
+            for row in rows:
+                db.insert_one("normalized_regulation", {
+                    "threat_level": "none",
+                    "source": row["source"],
+                    "description": "No regulatory threat detected",
+                    "timestamp": row.get("ts", datetime.now())
+                })
+                inserted += 1
         
         logger.info(f"Normalized {inserted} regulation records")
         return inserted
