@@ -88,6 +88,14 @@ class Config:
     def airbyte_port(self) -> int:
         return int(os.getenv("AIRBYTE_PORT", "8000"))
 
+    @property
+    def superset_host(self) -> str:
+        return os.getenv("SUPERSET_HOST", "localhost")
+
+    @property
+    def superset_port(self) -> int:
+        return int(os.getenv("SUPERSET_PORT", "8088"))
+
     def get(self, key: str, default: Any = None) -> Any:
         return self._settings.get(key, default)
 
