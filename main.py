@@ -1,11 +1,12 @@
 """
 Crash Radar v1.0 - Main Orchestrator
-Runs 3× daily to compute crash risk signals
+Runs 3× daily (or continuous) to compute crash risk signals
 """
 import sys
 import argparse
 from datetime import datetime
 from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 
 sys.path.insert(0, str(__file__).rsplit("/", 1)[0])
 
@@ -58,6 +59,7 @@ def main():
     parser.add_argument("--fetch", action="store_true", help="Fetch data from APIs before processing")
     parser.add_argument("--validate-only", action="store_true", help="Only validate sync")
     parser.add_argument("--fetch-only", action="store_true", help="Only fetch data")
+    parser.add_argument("--loop", type=int, default=0, help="Run every N minutes (e.g., --loop 3 for every 3 minutes)")
     args = parser.parse_args()
     
     if args.validate_only:
@@ -77,11 +79,20 @@ def main():
         return
     
     scheduler = BlockingScheduler()
-    for time_str in config.run_times:
-        hour, minute = map(int, time_str.split(":"))
-        scheduler.add_job(lambda: run_pipeline(fetch_data=True), "cron", hour=hour, minute=minute, id=f"crash_radar_{time_str}")
     
-    logger.info(f"Scheduler started. Running at: {config.run_times}")
+    if args.loop > 0:
+        scheduler.add_job(
+            lambda: run_pipeline(fetch_data=True),
+            trigger=IntervalTrigger(minutes=args.loop),
+            id=f"crash_radar_loop_{args.loop}m"
+        )
+        logger.info(f"Scheduler started. Running every {args.loop} minutes")
+    else:
+        for time_str in config.run_times:
+            hour, minute = map(int, time_str.split(":"))
+            scheduler.add_job(lambda: run_pipeline(fetch_data=True), "cron", hour=hour, minute=minute, id=f"crash_radar_{time_str}")
+        logger.info(f"Scheduler started. Running at: {config.run_times}")
+    
     logger.info("Press Ctrl+C to exit")
     
     try:
