@@ -1,0 +1,7 @@
+# Crash Radar Cron Configuration
+# Add to crontab with: crontab -e
+
+# Run pipeline 3× daily (6am, 2pm, 10pm)
+0 6 * * * cd /home/ubuntu/crash_radar && /home/ubuntu/crash_radar/venv/bin/python main.py --fetch >> /var/log/crash_radar.log 2>&1
+0 14 * * * cd /home/ubuntu/crash_radar && /home/ubuntu/crash_radar/venv/bin/python main.py --fetch >> /var/log/crash_radar.log 2>&1
+0 22 * * * cd /home/ubuntu/crash_radar && /home/ubuntu/crash_radar/venv/bin/python main.py --fetch >> /var/log/crash_radar.log 2>&1

@@ -80,6 +80,14 @@ class Config:
     def alert_score(self) -> int:
         return self._settings.get("signal_thresholds", {}).get("alert_score", 5)
 
+    @property
+    def airbyte_host(self) -> str:
+        return os.getenv("AIRBYTE_HOST", "localhost")
+
+    @property
+    def airbyte_port(self) -> int:
+        return int(os.getenv("AIRBYTE_PORT", "8000"))
+
     def get(self, key: str, default: Any = None) -> Any:
         return self._settings.get(key, default)
 
