@@ -1,0 +1,62 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-crash_radar}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  airbyte:
+    image: airbyte/server:${AIRBYTE_VERSION:-0.50.0}
+    container_name: airbyte
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_DB=airbyte
+      - AIRBYTE_VERSION=0.50.0
+    volumes:
+      - airbyte_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  superset:
+    image: apache/superset:${SUPERSET_VERSION:-2.1.0}
+    container_name: superset
+    ports:
+      - "8088:8088"
+    environment:
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY:-dev_secret_key_change_in_production}
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_DB: superset
+    volumes:
+      - superset_data:/var/lib/superset
+
+  pgadmin:
+    image: dpage/pgadmin4:${PGADMIN_VERSION:-latest}
+    container_name: pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@crashradar.com
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+volumes:
+  postgres_data:
+  airbyte_data:
+  superset_data:
+  pgadmin_data:

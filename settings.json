@@ -1,0 +1,18 @@
+{
+  "signal_thresholds": {
+    "rsi_oversold": 30,
+    "oi_drop_critical": 10,
+    "fear_greed_critical": 25,
+    "alert_score": 5
+  },
+  "schedule": {
+    "run_times": ["06:00", "14:00", "22:00"]
+  },
+  "sources": {
+    "coingecko": true,
+    "coinglass": true,
+    "alternative_me": true,
+    "fred": true,
+    "news": true
+  }
+}
